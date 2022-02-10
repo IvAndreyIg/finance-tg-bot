@@ -4,10 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start":"node src/app.ts",
+    "start": "ts-node-dev src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^17.0.17",
+    "dotenv": "^16.0.0",
+    "telegraf": "^4.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.5.0",
+    "ts-node-dev": "^1.1.8"
+  }
 }
