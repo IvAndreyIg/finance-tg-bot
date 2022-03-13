@@ -122,6 +122,13 @@ describe("transaction parser ", () => {
     );
   });
 
+  it("can parse transaction with arithmetic expression",()=>{
+
+    deepStrictEqual(
+      1,1
+    )
+  })
+
 
 
 

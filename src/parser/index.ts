@@ -41,7 +41,7 @@ export const TransactionParser = P.createLanguage<TransactionSpec>({
         language.amountOfMoney,
         P.regexp(/[+-]/).trim(P.optWhitespace),
         language.amountOfMoney,
-        (a,op,b)=>op==="+"?a+b:op==="+"?a-b:),
+        (a,op,b)=>op==="+"?P.succeed(a+b):op==="-"?P.succeed(a-b):P.fail(`unknown operator ${op}`)),
       language.number.skip(
         P.optWhitespace.then(language.currency).fallback(null)
       )
