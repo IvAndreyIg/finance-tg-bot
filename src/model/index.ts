@@ -1,8 +1,10 @@
 export class Transaction {
   constructor(
+    public date: Date,
+    public user: string,
+    public type: string,
     public category: string,
-    public amountOfMoney: Number,
-    public comment?: string,
-    public date?: Date
+    public amount: number,
+    public comment?: string
   ) {}
 }

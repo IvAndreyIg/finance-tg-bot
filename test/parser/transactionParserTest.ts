@@ -7,7 +7,7 @@ import {
   notDeepEqual,
   deepEqual,
 } from "assert";
-import { Transaction } from "../../src/model";
+import { ParsedTransaction } from "../../src/model/parsed";
 import { Success } from "parsimmon";
 
 describe("transaction parser ", () => {
@@ -54,7 +54,7 @@ describe("transaction parser ", () => {
 
       {
         status: true,
-        value: new Transaction("продукты", 123.23),
+        value: new ParsedTransaction("продукты", 123.23),
       }
     );
 
@@ -66,7 +66,7 @@ describe("transaction parser ", () => {
 
       {
         status: true,
-        value: new Transaction("зарплата", 123.23),
+        value: new ParsedTransaction("зарплата", 123.23),
       }
     );
 
@@ -76,7 +76,7 @@ describe("transaction parser ", () => {
 
       {
         status: true,
-        value: new Transaction("зарплата", 123.23),
+        value: new ParsedTransaction("зарплата", 123.23),
       }
     );
   });
@@ -87,7 +87,7 @@ describe("transaction parser ", () => {
 
       {
         status: true,
-        value: new Transaction("продукты", 123.23, "овощи"),
+        value: new ParsedTransaction("продукты", 123.23, "овощи"),
       }
     );
 
@@ -96,7 +96,7 @@ describe("transaction parser ", () => {
 
       {
         status: true,
-        value: new Transaction("зарплата", 123.23, "за работу"),
+        value: new ParsedTransaction("зарплата", 123.23, "за работу"),
       }
     );
   });
@@ -107,7 +107,7 @@ describe("transaction parser ", () => {
     const t1=TransactionParser.transaction.parse("вчера продукты 123.23 овощи")
 
     deepStrictEqual(
-      (t1 as Success<Transaction>)?.value?.date?.getDate(),
+      (t1 as Success<ParsedTransaction>)?.value?.date?.getDate(),
 
       new Date().getDate()-1
     );
@@ -117,17 +117,19 @@ describe("transaction parser ", () => {
 
       {
         status: true,
-        value: new Transaction("зарплата", 123.23, "за работу"),
+        value: new ParsedTransaction("зарплата", 123.23, "за работу"),
       }
     );
   });
 
   it("can parse transaction with arithmetic expression",()=>{
 
-    deepStrictEqual(
-      1,1
-    )
+    const t1=TransactionParser.transaction.tryParse("продукты 123 р + 345 руб. +3 -23 рублей макароны , мясо")
+    strictEqual(t1.category,"продукты")
+    strictEqual(t1.amountOfMoney,123+ 345+3-23)
+    strictEqual(t1.comment ,"макароны , мясо")
   })
+
 
 
 

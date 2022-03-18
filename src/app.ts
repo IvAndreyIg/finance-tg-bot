@@ -1,8 +1,12 @@
+import { Transaction } from "./model/index";
+import { TransactionParser } from "./parser/index";
+import { FinanceManagmentService } from "./service/index";
 require("dotenv").config();
 
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { assert } from "console";
 import { Telegraf } from "telegraf";
+
 
 const token: string = process.env.BOT_TOKEN!;
 const financeMgrEmail: string = process.env.FINANCE_MGR_EMAIL!;
@@ -12,48 +16,59 @@ assert(token != null, "no token variable found!");
 assert(financeMgrEmail != null, "no email variable found!");
 assert(financeMgrKey != null, "no key variable found!");
 
-console.log("process.env.BOT_TOKEN", token);
-console.log("financeMgrEmail", financeMgrEmail);
-console.log("financeMgrKey", financeMgrKey);
+// console.log("process.env.BOT_TOKEN", token);
+// console.log("financeMgrEmail", financeMgrEmail);
+// console.log("financeMgrKey", financeMgrKey);
 
 
 
 async function runBot() {
-  const doc = new GoogleSpreadsheet(
-    "1k2HboLo9mjwat5YwhNgK4PhzV6dLiWeWzM6fl7fP7E0"
-  );
-
-  try {
-    const data = await doc.useServiceAccountAuth({
-      client_email: financeMgrEmail,
-      private_key: financeMgrKey.replace(/\\n/g, "\n"),
-    });
-  } catch (error) {
-    console.error(error);
-  }
-
-  await doc.loadInfo();
-  const sheet = await doc.sheetsByIndex[0];
+  
+ 
+   const financeManagementSvc=new FinanceManagmentService("1k2HboLo9mjwat5YwhNgK4PhzV6dLiWeWzM6fl7fP7E0",financeMgrEmail!,financeMgrKey!.replace(/\\n/g, "\n"))   
+  
 
   const bot = new Telegraf(token);
 
   bot.on("text", async (ctx, next) => {
+
+    const result=TransactionParser.transaction.parse(ctx.message.text);
+
+
+    //console.dir(result,{showHidden:true,depth:2})
+    
+    if(result.status===true){
+     
+        const transaction=new Transaction(
+          result.value.date||new Date(),
+          ctx.message.from.username||"user1",
+          "normal",
+          result.value.category,
+          result.value.amountOfMoney,
+          result.value.comment
+          
+
+        )
+          try {
+            await financeManagementSvc.addTransaction(transaction);
+            ctx.reply('транзакция сохраненаю')
+          } catch (error) {
+            //console.dir(error,{showHidden:true,depth:2})
+            
+            ctx.reply("ошибка:"+error)
+          }
+       
+
+
+    } else {
+      ctx.reply("не понял " + result.expected )
+    }
     console.log("message", ctx.message.text);
 
-    const r =
-      /(?<date>\w+)\s+(?<type>\w+)\s+(?<category>\w+)\s+(?<amount>\d+)\s+(?<description>\w+)/.exec(
-        ctx.message.text
-      );
+   
 
-    if (r == null) ctx.reply("неправильный текст");
+   
 
-    await sheet.addRow({
-      date: r?.groups?.date!,
-      type: r?.groups?.type!,
-      category: r?.groups?.category!,
-      amount: r?.groups?.amount!,
-      description: r?.groups?.description!,
-    });
 
     next();
   });
@@ -67,5 +82,11 @@ async function runBot() {
   process.once("SIGINT", () => bot.stop("SIGINT"));
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
 }
+try {
 
-runBot();
+  runBot();
+} catch (error) {
+
+  console.log('EEEError113:', error)
+}
+
